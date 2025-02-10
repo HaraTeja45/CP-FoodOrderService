@@ -2,8 +2,11 @@ package com.cp.foodordermanagement.bean;
 
 import java.util.List;
 
+import com.cp.foodordermanagement.customannotation.NotNull;
+
 public class PartnerRestaurantRequestBean {
 
+	@NotNull
 	private String restaurantName;
 
 	private String restaurantDescription;
@@ -11,13 +14,16 @@ public class PartnerRestaurantRequestBean {
 	private String restaurantOpenTime;
 
 	private String restaurantCloseTime;
+	@NotNull
+	private String branch;
 
 	private String openDays;
 
 	private String status;
 
+	@NotNull
 	private PartnerMenuRequestBean partnerMenuRequestBean;
-
+	@NotNull
 	private List<PartnerCusineRequestBean> partnerCusineRequestBeans;
 
 	public PartnerMenuRequestBean getPartnerMenuRequestBean() {
@@ -82,6 +88,14 @@ public class PartnerRestaurantRequestBean {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public String getBranch() {
+		return branch;
+	}
+
+	public void setBranch(String branch) {
+		this.branch = branch;
 	}
 
 }

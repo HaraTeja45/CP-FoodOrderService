@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cp.foodordermanagement.bean.ErrorBean;
 import com.cp.foodordermanagement.bean.PartnerRestaurantRequestBean;
 import com.cp.foodordermanagement.bean.ResponseBean;
+import com.cp.foodordermanagement.customannotation.NotNull;
 import com.cp.foodordermanagement.service.RestaurantManagementService;
 
 @RestController
@@ -20,18 +22,36 @@ public class PartnerRestaurantController {
 
 	@PostMapping("v1/food/register/restaurant")
 	public ResponseEntity<?> registerRestaurant(
-			@RequestBody PartnerRestaurantRequestBean partnerRestaurantRequestBean) {
+			@RequestBody @NotNull PartnerRestaurantRequestBean partnerRestaurantRequestBean) {
 
-		ResponseBean responseBean = restaurantManagementService.registerRestaurant(partnerRestaurantRequestBean);
+		ResponseBean responseBean = new ResponseBean();
+		try {
+			responseBean = restaurantManagementService.registerRestaurant(partnerRestaurantRequestBean);
+		} catch (Exception e) {
+
+			ErrorBean errorBean = new ErrorBean();
+			errorBean.setErrorCode("500");
+			errorBean.setErrorMessage("Technical error occured");
+			responseBean.setErrorBean(errorBean);
+		}
 
 		return new ResponseEntity<>(responseBean, HttpStatus.OK);
 	}
 
 	@PutMapping("v1/food/update/restaurant")
 	public ResponseEntity<?> updateRestaurant(
-			@RequestBody  PartnerRestaurantRequestBean partnerRestaurantRequestBean) {
+			@RequestBody @NotNull PartnerRestaurantRequestBean partnerRestaurantRequestBean) {
 
-		ResponseBean responseBean = restaurantManagementService.updateRestaurant(partnerRestaurantRequestBean);
+		ResponseBean responseBean = new ResponseBean();
+		try {
+			responseBean = restaurantManagementService.updateRestaurant(partnerRestaurantRequestBean);
+		} catch (Exception e) {
+
+			ErrorBean errorBean = new ErrorBean();
+			errorBean.setErrorCode("500");
+			errorBean.setErrorMessage("Technical error occured");
+			responseBean.setErrorBean(errorBean);
+		}
 
 		return new ResponseEntity<>(responseBean, HttpStatus.OK);
 	}

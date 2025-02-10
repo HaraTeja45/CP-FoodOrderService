@@ -2,12 +2,13 @@ package com.cp.foodordermanagement.service;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import com.cp.foodordermanagement.bean.PartnerCusineRequestBean;
 import com.cp.foodordermanagement.bean.PartnerMenuRequestBean;
@@ -47,71 +48,71 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 
 		ResponseBean responseBean = new ResponseBean();
 
-		if (!Objects.isNull(partnerRestaurantRequestBean)) {
+		try {
 
 			RestaurantDetails restaurantDetails = null;
 
-			if (Objects.isNull(partnerRestaurantRequestBean.getRestaurantName())) {
+			restaurantDetails = new RestaurantDetails();
 
-				restaurantDetails = new RestaurantDetails();
+			restaurantDetails.setRestaurantName(partnerRestaurantRequestBean.getRestaurantName());
+			restaurantDetails.setRestaurantDescription(partnerRestaurantRequestBean.getRestaurantDescription());
 
-				restaurantDetails.setRestaurantName(partnerRestaurantRequestBean.getRestaurantName());
-				restaurantDetails.setRestaurantDescription(partnerRestaurantRequestBean.getRestaurantDescription());
+			LocalTime openTime = fomUtil.convertStringtoLocalTime(partnerRestaurantRequestBean.getRestaurantOpenTime());
+			restaurantDetails.setOpenTime(openTime);
 
-				LocalTime openTime = fomUtil
-						.convertStringtoLocalTime(partnerRestaurantRequestBean.getRestaurantOpenTime());
-				restaurantDetails.setOpenTime(openTime);
+			LocalTime closeTime = fomUtil
+					.convertStringtoLocalTime(partnerRestaurantRequestBean.getRestaurantCloseTime());
 
-				LocalTime closeTime = fomUtil
-						.convertStringtoLocalTime(partnerRestaurantRequestBean.getRestaurantCloseTime());
+			restaurantDetails.setCloseTime(closeTime);
 
-				restaurantDetails.setCloseTime(closeTime);
+			restaurantDetails.setIsActive(FOMConstants.IS_ACTIVE);
 
-				restaurantDetails.setIsActive(FOMConstants.IS_ACTIVE);
+			MenuDetails menuDetails = saveMenuDetails(partnerRestaurantRequestBean);
 
-				if (!Objects.isNull(partnerRestaurantRequestBean.getPartnerMenuRequestBean())) {
+			restaurantDetails.setMenuKey(menuDetails);
 
-					MenuDetails menuDetails = new MenuDetails();
+			restaurantDetailsRepository.save(restaurantDetails);
+		} catch (Exception e) {
 
-					PartnerMenuRequestBean partnerMenuRequestBean = partnerRestaurantRequestBean
-							.getPartnerMenuRequestBean();
-
-					menuDetails.setMenuName(partnerMenuRequestBean.getMenuName());
-					menuDetails.setMenuDescription(partnerMenuRequestBean.getMenuDescription());
-
-					if (!CollectionUtils.isEmpty(partnerRestaurantRequestBean.getPartnerCusineRequestBeans())) {
-
-						List<PartnerCusineRequestBean> partnerCusineRequestBeanList = partnerRestaurantRequestBean
-								.getPartnerCusineRequestBeans();
-
-						List<CusineDetails> cusineDetails = partnerCusineRequestBeanList.stream()
-								.map(cusine -> prepareCusineDetails(cusine, menuDetails)).collect(Collectors.toList());
-
-						cusineDetailsRepository.saveAll(cusineDetails);
-
-						menuDetails.setCusineDetails(cusineDetails);
-					} else {
-						throw new NullPointerException();
-					}
-
-					menuDetailsRepository.save(menuDetails);
-
-					restaurantDetails.setMenuKey(menuDetails);
-
-				} else {
-					throw new NullPointerException();
-				}
-
-				restaurantDetailsRepository.save(restaurantDetails);
-
-			} else {
-
-				throw new NullPointerException();
-			}
-
+			throw e;
 		}
 
+		JSONObject jsonObject = new JSONObject();
+
+		jsonObject.put("message", "Successfully registered restaurent details");
+		responseBean.setStatus("Success");
+
+		responseBean.setPayload(jsonObject);
+
 		return responseBean;
+	}
+
+	private MenuDetails saveMenuDetails(PartnerRestaurantRequestBean partnerRestaurantRequestBean) {
+		MenuDetails menuDetails = new MenuDetails();
+
+		PartnerMenuRequestBean partnerMenuRequestBean = partnerRestaurantRequestBean.getPartnerMenuRequestBean();
+
+		menuDetails.setMenuName(partnerMenuRequestBean.getMenuName());
+		menuDetails.setMenuDescription(partnerMenuRequestBean.getMenuDescription());
+
+		List<CusineDetails> cusineDetails = saveCusineDetails(partnerRestaurantRequestBean, menuDetails);
+
+		menuDetails.setCusineDetails(cusineDetails);
+
+		menuDetailsRepository.save(menuDetails);
+		return menuDetails;
+	}
+
+	private List<CusineDetails> saveCusineDetails(PartnerRestaurantRequestBean partnerRestaurantRequestBean,
+			MenuDetails menuDetails) {
+		List<PartnerCusineRequestBean> partnerCusineRequestBeanList = partnerRestaurantRequestBean
+				.getPartnerCusineRequestBeans();
+
+		List<CusineDetails> cusineDetails = partnerCusineRequestBeanList.stream()
+				.map(cusine -> prepareCusineDetails(cusine, menuDetails)).collect(Collectors.toList());
+
+		cusineDetailsRepository.saveAll(cusineDetails);
+		return cusineDetails;
 	}
 
 	private CusineDetails prepareCusineDetails(PartnerCusineRequestBean cusine, MenuDetails menuDetails) {
@@ -136,7 +137,58 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 	@Override
 	public ResponseBean updateRestaurant(PartnerRestaurantRequestBean partnerRestaurantRequestBean) {
 
-		return null;
+		ResponseBean responseBean = new ResponseBean();
+
+		try {
+			RestaurantDetails existingRestaurantDetails = restaurantDetailsRepository
+					.findByRestaurantNameAndBranchNameAndIsActive(partnerRestaurantRequestBean.getRestaurantName(),
+							partnerRestaurantRequestBean.getBranch(), FOMConstants.IS_ACTIVE);
+
+			MenuDetails menuDetails = existingRestaurantDetails.getMenuKey();
+
+			menuDetails.setMenuName(partnerRestaurantRequestBean.getPartnerMenuRequestBean().getMenuName());
+			menuDetails
+					.setMenuDescription(partnerRestaurantRequestBean.getPartnerMenuRequestBean().getMenuDescription());
+
+			List<CusineDetails> cusineDetails = menuDetails.getCusineDetails();
+
+			List<PartnerCusineRequestBean> partnerCusineRequestBeans = partnerRestaurantRequestBean
+					.getPartnerCusineRequestBeans();
+
+			Map<String, PartnerCusineRequestBean> cusineNameToBeanMap = partnerCusineRequestBeans.stream()
+					.collect(Collectors.toMap(bean -> bean.getCusineName().toLowerCase(), bean -> bean));
+
+			List<CusineDetails> updateCusineDetails = cusineDetails.stream()
+					.filter(cusineDet -> cusineNameToBeanMap.containsKey(cusineDet.getCusineName().toLowerCase()))
+					.map(cusineDet -> updateCusineDetails(cusineDet,
+							cusineNameToBeanMap.get(cusineDet.getCusineName().toLowerCase())))
+					.collect(Collectors.toList());
+
+			cusineDetailsRepository.saveAll(updateCusineDetails);
+
+			menuDetails.setCusineDetails(updateCusineDetails);
+		} catch (Exception e) {
+			throw e;
+		}
+
+		JSONObject jsonObject = new JSONObject();
+
+		jsonObject.put("message", "Successfully registered restaurent details");
+		responseBean.setStatus("Success");
+
+		responseBean.setPayload(jsonObject);
+
+		return responseBean;
+	}
+
+	private CusineDetails updateCusineDetails(CusineDetails cusine, PartnerCusineRequestBean partnerCusineRequestBean) {
+
+		cusine.setCusineDescription(partnerCusineRequestBean.getCusineDescription());
+		cusine.setCusineName(partnerCusineRequestBean.getCusineName());
+		cusine.setIsActive(partnerCusineRequestBean.getStatus().equalsIgnoreCase("In-Stock") ? FOMConstants.IS_ACTIVE
+				: FOMConstants.IN_ACTIVE);
+
+		return cusine;
 	}
 
 }

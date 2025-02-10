@@ -25,6 +25,8 @@ public class RestaurantDetails {
 
 	private String restaurantRating;
 
+	private String branchName;
+
 	private Integer isActive;
 
 	public Long getRestaurantKey() {
@@ -89,6 +91,14 @@ public class RestaurantDetails {
 
 	public void setCloseTime(LocalTime closeTime) {
 		this.closeTime = closeTime;
+	}
+
+	public String getBranchName() {
+		return branchName;
+	}
+
+	public void setBranchName(String branchName) {
+		this.branchName = branchName;
 	}
 
 }

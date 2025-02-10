@@ -8,6 +8,8 @@ public class PartnerCusineRequestBean {
 
 	private String cusineCode;
 
+	private String status;
+
 	public String getCusineName() {
 		return cusineName;
 	}
@@ -30,6 +32,14 @@ public class PartnerCusineRequestBean {
 
 	public void setCusineCode(String cusineCode) {
 		this.cusineCode = cusineCode;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }
