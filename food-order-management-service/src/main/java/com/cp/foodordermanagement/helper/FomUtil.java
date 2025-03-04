@@ -5,6 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class FomUtil {
 
 	public LocalTime convertStringtoLocalTime(String timeString) {

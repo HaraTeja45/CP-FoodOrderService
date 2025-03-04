@@ -1,11 +1,14 @@
 package com.cp.foodordermanagement.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "cusinedetails", schema = "public")
 public class CusineDetails {
 
 	@Id
@@ -13,14 +16,14 @@ public class CusineDetails {
 
 	private String cusineName;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "menuKey", nullable = false)
 	private MenuDetails menuDetails;
 
-	@ManyToOne
-    @JoinColumn(name = "cusineCategoryKey", nullable = false)
-	private CusineCategory cusineCategoryKey;
-	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "cusineCategoryKey", nullable = false)
+	private CusineCategory cusineCategory;
+
 	private String cusineDescription;
 
 	private String cusineRating;
@@ -59,12 +62,12 @@ public class CusineDetails {
 		this.isActive = isActive;
 	}
 
-	public CusineCategory getCusineCategoryKey() {
-		return cusineCategoryKey;
+	public CusineCategory getCusineCategory() {
+		return cusineCategory;
 	}
 
-	public void setCusineCategoryKey(CusineCategory cusineCategoryKey) {
-		this.cusineCategoryKey = cusineCategoryKey;
+	public void setCusineCategory(CusineCategory cusineCategory) {
+		this.cusineCategory = cusineCategory;
 	}
 
 	public MenuDetails getMenuDetails() {
@@ -82,6 +85,7 @@ public class CusineDetails {
 	public void setCusineDescription(String cusineDescription) {
 		this.cusineDescription = cusineDescription;
 	}
-
 	
+	
+
 }

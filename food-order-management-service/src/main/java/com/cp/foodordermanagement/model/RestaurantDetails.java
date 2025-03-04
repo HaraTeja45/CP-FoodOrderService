@@ -2,11 +2,15 @@ package com.cp.foodordermanagement.model;
 
 import java.time.LocalTime;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "restaurantdetails", schema = "public")
 public class RestaurantDetails {
 
 	@Id
@@ -20,8 +24,9 @@ public class RestaurantDetails {
 
 	private LocalTime closeTime;
 
-	@JoinColumn(name = "menuKey", referencedColumnName = "menuKey", nullable = false)
-	private MenuDetails menuKey;
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "menuKey") // Foreign key column in the RestaurantDetails table
+	private MenuDetails menuDetails;
 
 	private String restaurantRating;
 
@@ -53,12 +58,12 @@ public class RestaurantDetails {
 		this.restaurantDescription = restaurantDescription;
 	}
 
-	public MenuDetails getMenuKey() {
-		return menuKey;
+	public MenuDetails getMenuDetails() {
+		return menuDetails;
 	}
 
-	public void setMenuKey(MenuDetails menuKey) {
-		this.menuKey = menuKey;
+	public void setMenuDetails(MenuDetails menuDetails) {
+		this.menuDetails = menuDetails;
 	}
 
 	public String getRestaurantRating() {

@@ -2,11 +2,15 @@ package com.cp.foodordermanagement.model;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "menudetails", schema = "public")
 public class MenuDetails {
 
 	@Id
@@ -16,8 +20,11 @@ public class MenuDetails {
 
 	private String menuDescription;
 
-	@OneToMany // default fetch type is lazy for one to many
+	@OneToMany(mappedBy = "cusineKey", cascade = CascadeType.ALL)
 	private List<CusineDetails> cusineDetails;
+	
+	@OneToOne(mappedBy = "menuDetails",cascade = CascadeType.ALL)
+	private RestaurantDetails restaurantDetails;
 
 	private Integer isActive;
 

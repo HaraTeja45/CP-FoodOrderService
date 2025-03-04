@@ -14,6 +14,7 @@ import com.cp.foodordermanagement.bean.PartnerCusineRequestBean;
 import com.cp.foodordermanagement.bean.PartnerMenuRequestBean;
 import com.cp.foodordermanagement.bean.PartnerRestaurantRequestBean;
 import com.cp.foodordermanagement.bean.ResponseBean;
+import com.cp.foodordermanagement.customexception.FoodOrderManagementServiceException;
 import com.cp.foodordermanagement.helper.FOMConstants;
 import com.cp.foodordermanagement.helper.FomUtil;
 import com.cp.foodordermanagement.model.CusineCategory;
@@ -69,12 +70,12 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 
 			MenuDetails menuDetails = saveMenuDetails(partnerRestaurantRequestBean);
 
-			restaurantDetails.setMenuKey(menuDetails);
+			restaurantDetails.setMenuDetails(menuDetails);
 
 			restaurantDetailsRepository.save(restaurantDetails);
 		} catch (Exception e) {
-
-			throw e;
+			throw new FoodOrderManagementServiceException("500",
+					"Techical Error Occured while registering a restaurant");
 		}
 
 		JSONObject jsonObject = new JSONObject();
@@ -125,7 +126,7 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 					.findByCusineCatCodeAndIsActive(cusine.getCusineCode(), FOMConstants.IS_ACTIVE);
 			cusineDetails.setCusineName(cusine.getCusineName());
 			cusineDetails.setCusineDescription(cusine.getCusineDescription());
-			cusineDetails.setCusineCategoryKey(cusineCategory);
+			cusineDetails.setCusineCategory(cusineCategory);
 			cusineDetails.setMenuDetails(menuDetails);
 			cusineDetails.setIsActive(FOMConstants.IS_ACTIVE);
 
@@ -144,7 +145,7 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 					.findByRestaurantNameAndBranchNameAndIsActive(partnerRestaurantRequestBean.getRestaurantName(),
 							partnerRestaurantRequestBean.getBranch(), FOMConstants.IS_ACTIVE);
 
-			MenuDetails menuDetails = existingRestaurantDetails.getMenuKey();
+			MenuDetails menuDetails = existingRestaurantDetails.getMenuDetails();
 
 			menuDetails.setMenuName(partnerRestaurantRequestBean.getPartnerMenuRequestBean().getMenuName());
 			menuDetails
@@ -168,7 +169,7 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 
 			menuDetails.setCusineDetails(updateCusineDetails);
 		} catch (Exception e) {
-			throw e;
+			throw new FoodOrderManagementServiceException("500", "Techical Error Occured while updateRestaurant");
 		}
 
 		JSONObject jsonObject = new JSONObject();
