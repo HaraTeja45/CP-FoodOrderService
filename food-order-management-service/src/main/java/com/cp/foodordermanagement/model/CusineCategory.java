@@ -1,7 +1,13 @@
 package com.cp.foodordermanagement.model;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -9,6 +15,7 @@ import jakarta.persistence.Table;
 public class CusineCategory {
 
 	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long cusineCategoryKey;
 
 	private String cusineCatCode;
@@ -16,6 +23,9 @@ public class CusineCategory {
 	private String categoryDescription;
 
 	private Integer isActive;
+	
+	@OneToMany(mappedBy = "cusineCategory")
+	private List<CusineDetails> cusineDetails;
 
 	public Long getCusineCategoryKey() {
 		return cusineCategoryKey;
@@ -47,6 +57,14 @@ public class CusineCategory {
 
 	public void setIsActive(Integer isActive) {
 		this.isActive = isActive;
+	}
+
+	public List<CusineDetails> getCusineDetails() {
+		return cusineDetails;
+	}
+
+	public void setCusineDetails(List<CusineDetails> cusineDetails) {
+		this.cusineDetails = cusineDetails;
 	}
 
 }

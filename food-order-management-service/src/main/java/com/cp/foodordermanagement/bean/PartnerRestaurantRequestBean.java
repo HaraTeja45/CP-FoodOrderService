@@ -97,5 +97,7 @@ public class PartnerRestaurantRequestBean {
 	public void setBranch(String branch) {
 		this.branch = branch;
 	}
+	
+	
 
 }

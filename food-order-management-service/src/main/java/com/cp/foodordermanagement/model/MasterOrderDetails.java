@@ -3,6 +3,9 @@ package com.cp.foodordermanagement.model;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -24,8 +27,10 @@ public class MasterOrderDetails {
 
 	private Integer isactive;
 
+	@UpdateTimestamp
 	private Timestamp lstUpdatedTime;
 
+	@CreationTimestamp
 	private Timestamp createdTime;
 
 	public Long getMasterOrderId() {

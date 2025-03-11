@@ -1,6 +1,9 @@
-package com.cp.foodordermanagement.controller;
+package com.cp.foodordermanagement.model;
 
 import java.sql.Timestamp;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -19,8 +22,10 @@ public class CustomerDetails {
 
 	private Integer isactive;
 
+	@CreationTimestamp
 	private Timestamp createdDate;
 
+	@UpdateTimestamp
 	private Timestamp lstUpdatedime;
 
 	public Long getCustomerId() {

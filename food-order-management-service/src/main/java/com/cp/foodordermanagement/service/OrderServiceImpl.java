@@ -26,9 +26,12 @@ import com.cp.foodordermanagement.repository.MasterOrderDetailsRepository;
 import com.cp.foodordermanagement.repository.MenuDetailsRepository;
 import com.cp.foodordermanagement.repository.OrderDetailsRepository;
 import com.cp.foodordermanagement.repository.RestaurantDetailsRepository;
+import com.logging.CommonLoggingUtil;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+
+	private static final String CLASS_NAME = OrderServiceImpl.class.getCanonicalName();
 
 	@Autowired
 	private RestaurantDetailsRepository restaurantDetailsRepository;
@@ -45,8 +48,13 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private CusineDetailsRepository cusineDetailsRepository;
 
+	@Autowired
+	private CommonLoggingUtil logger;
+
 	@Override
 	public ResponseBean fetchOrderDetails(String customerId) {
+
+		logger.debug(CLASS_NAME, "Service", "inside fetchOrderDetails for customer id:" + customerId);
 
 		ResponseBean responseBean = new ResponseBean();
 
@@ -83,13 +91,19 @@ public class OrderServiceImpl implements OrderService {
 			responseBean.setPayload(orderBeanList);
 			responseBean.setStatus(FOMConstants.SUCCESS);
 		} catch (Exception e) {
+
+			logger.debug(CLASS_NAME, "Service", "error occured in fetchOrderDetails for customer id:" + customerId);
 			throw new FoodOrderManagementServiceException("500", "Technical error occured while fetchOrderDetails");
 		}
+
+		logger.debug(CLASS_NAME, "Service", "End fetchOrderDetails for customer id:" + customerId);
 		return responseBean;
 	}
 
 	@Override
 	public ResponseBean placeOrder(OrderRequestBean orderRequestBean) {
+
+		logger.debug(CLASS_NAME, "Service", "inside placeOrder");
 
 		ResponseBean responseBean = new ResponseBean();
 
@@ -111,27 +125,31 @@ public class OrderServiceImpl implements OrderService {
 							.findByRestaurantNameAndBranchNameAndIsActive(order.getRestaurantName(),
 									order.getRestaurantBranchName(), FOMConstants.IS_ACTIVE);
 
-					MenuDetails menuDetails = menuDetailsRepository.findByMenuKeyAndIsActive(
-							restaurantDetails.getMenuDetails().getMenuKey(), FOMConstants.IS_ACTIVE);
+					if (!Objects.isNull(restaurantDetails)) {
+						MenuDetails menuDetails = menuDetailsRepository.findByMenuKeyAndIsActive(
+								restaurantDetails.getMenuDetails().getMenuKey(), FOMConstants.IS_ACTIVE);
+						List<CusineDetails> restaurantCusineDetails = menuDetails.getCusineDetails();
+						CusineDetails cusineDetails = restaurantCusineDetails.stream()
+								.filter(resCusine -> resCusine.getCusineName().equalsIgnoreCase(order.getCusineName())
+										&& resCusine.getIsActive().equals(FOMConstants.IS_ACTIVE))
+								.findFirst().orElse(null);
+						if (!Objects.isNull(cusineDetails)) {
 
-					List<CusineDetails> restaurantCusineDetails = menuDetails.getCusineDetails();
+							OrderDetails orderDetails = prepareOrderDetails(masterOrderDetails, order,
+									restaurantDetails, cusineDetails);
 
-					CusineDetails cusineDetails = restaurantCusineDetails.stream()
-							.filter(resCusine -> resCusine.getCusineName().equalsIgnoreCase(order.getCusineName())
-									&& resCusine.getIsActive().equals(FOMConstants.IS_ACTIVE))
-							.findFirst().orElse(null);
+							orderDetailList.add(orderDetails);
 
-					if (!Objects.isNull(cusineDetails)) {
+						} else {
 
-						OrderDetails orderDetails = prepareOrderDetails(masterOrderDetails, order, restaurantDetails,
-								cusineDetails);
-
-						orderDetailList.add(orderDetails);
-
+							throw new FoodOrderManagementServiceException("500",
+									"Technical error occured while placeOrder");
+						}
 					} else {
 
-						throw new FoodOrderManagementServiceException("500",
-								"Technical error occured while placeOrder");
+						logger.debug(CLASS_NAME, "Service",
+								"Error occured in placeOrder as restaurant details are null or empty");
+						throw new FoodOrderManagementServiceException("400", "restaurant details cannot be null");
 					}
 
 				}
@@ -146,30 +164,44 @@ public class OrderServiceImpl implements OrderService {
 				responseBean.setPayload(jsonObject);
 
 			} else {
-				throw new Exception();
+
+				logger.debug(CLASS_NAME, "Service", "Error occured in placeOrder as order request in null or empty");
+				throw new FoodOrderManagementServiceException("400", "Order request cannot be null");
 			}
 
-		} catch (Exception e) {
-
-			e.printStackTrace();
+		} catch (FoodOrderManagementServiceException e) {
+			throw e;
 		}
+
+		catch (Exception e) {
+
+			logger.debug(CLASS_NAME, "Service", "Error occured in placeOrder");
+
+			throw new FoodOrderManagementServiceException("500", "Technical error occured while fetchOrderDetails");
+		}
+
+		logger.debug(CLASS_NAME, "Service", "inside placeOrder");
 
 		return responseBean;
 	}
 
 	private OrderDetails prepareOrderDetails(MasterOrderDetails masterOrderDetails, OrderBean order,
 			RestaurantDetails restaurantDetails, CusineDetails cusineDetails) {
+
+		logger.debug(CLASS_NAME, "Service", "inside prepareOrderDetails");
 		OrderDetails orderDetails = new OrderDetails();
 
 		orderDetails.setCusineKey(cusineDetails.getCusineKey());
 		orderDetails.setPrice(new BigDecimal(order.getPrice()));
 		orderDetails.setRestaurantKey(restaurantDetails.getRestaurantKey());
-		// orderDetails.setMasterOrderDetails(masterOrderDetails);
+		orderDetails.setMasterOrderDetails(masterOrderDetails);
 		orderDetails.setStatus(FOMConstants.ACTIVE_STATUS);
 		orderDetails.setOrderedBy(1l);// need to provide customer id
 		orderDetails.setOrderCreateddateTime(new Timestamp(new Date().getTime()));
 		orderDetails.setLstUpdatedDateTime(new Timestamp(new Date().getTime()));
 		orderDetails.setIsActive(FOMConstants.IS_ACTIVE);
+
+		logger.debug(CLASS_NAME, "Service", "end prepareOrderDetails");
 		return orderDetails;
 	}
 

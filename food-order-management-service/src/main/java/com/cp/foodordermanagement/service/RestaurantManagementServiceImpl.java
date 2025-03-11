@@ -25,9 +25,12 @@ import com.cp.foodordermanagement.repository.CusineCategoryRepository;
 import com.cp.foodordermanagement.repository.CusineDetailsRepository;
 import com.cp.foodordermanagement.repository.MenuDetailsRepository;
 import com.cp.foodordermanagement.repository.RestaurantDetailsRepository;
+import com.logging.CommonLoggingUtil;
 
 @Service
 public class RestaurantManagementServiceImpl implements RestaurantManagementService {
+
+	private static final String CLASS_NAME = RestaurantManagementServiceImpl.class.getCanonicalName();
 
 	@Autowired
 	private RestaurantDetailsRepository restaurantDetailsRepository;
@@ -44,8 +47,13 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 	@Autowired
 	private FomUtil fomUtil;
 
+	@Autowired
+	private CommonLoggingUtil logger;
+
 	@Override
 	public ResponseBean registerRestaurant(PartnerRestaurantRequestBean partnerRestaurantRequestBean) {
+
+		logger.debug(CLASS_NAME, "Service", "inside registerRestaurant");
 
 		ResponseBean responseBean = new ResponseBean();
 
@@ -56,6 +64,7 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 			restaurantDetails = new RestaurantDetails();
 
 			restaurantDetails.setRestaurantName(partnerRestaurantRequestBean.getRestaurantName());
+			restaurantDetails.setBranchName(partnerRestaurantRequestBean.getBranch());
 			restaurantDetails.setRestaurantDescription(partnerRestaurantRequestBean.getRestaurantDescription());
 
 			LocalTime openTime = fomUtil.convertStringtoLocalTime(partnerRestaurantRequestBean.getRestaurantOpenTime());
@@ -74,6 +83,8 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 
 			restaurantDetailsRepository.save(restaurantDetails);
 		} catch (Exception e) {
+
+			logger.error(CLASS_NAME, "Service", "error in registerRestaurant");
 			throw new FoodOrderManagementServiceException("500",
 					"Techical Error Occured while registering a restaurant");
 		}
@@ -84,6 +95,8 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 		responseBean.setStatus("Success");
 
 		responseBean.setPayload(jsonObject);
+
+		logger.debug(CLASS_NAME, "Service", "end registerRestaurant");
 
 		return responseBean;
 	}
@@ -99,8 +112,10 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 		List<CusineDetails> cusineDetails = saveCusineDetails(partnerRestaurantRequestBean, menuDetails);
 
 		menuDetails.setCusineDetails(cusineDetails);
+		
+		menuDetails.setIsActive(FOMConstants.IS_ACTIVE);
 
-		menuDetailsRepository.save(menuDetails);
+
 		return menuDetails;
 	}
 
@@ -112,7 +127,7 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 		List<CusineDetails> cusineDetails = partnerCusineRequestBeanList.stream()
 				.map(cusine -> prepareCusineDetails(cusine, menuDetails)).collect(Collectors.toList());
 
-		cusineDetailsRepository.saveAll(cusineDetails);
+	//	cusineDetailsRepository.saveAll(cusineDetails);
 		return cusineDetails;
 	}
 
@@ -124,9 +139,20 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 
 			CusineCategory cusineCategory = cusineCategoryRepository
 					.findByCusineCatCodeAndIsActive(cusine.getCusineCode(), FOMConstants.IS_ACTIVE);
+			if (!Objects.isNull(cusineCategory)) {
+				cusineDetails.setCusineCategory(cusineCategory);
+			} else {
+				CusineCategory newCusineCategory = new CusineCategory();
+
+				newCusineCategory.setCategoryDescription(cusine.getCusineCatDescription());
+				newCusineCategory.setCusineCatCode(cusine.getCusineCategory());
+				newCusineCategory.setIsActive(FOMConstants.IS_ACTIVE);
+
+				cusineDetails.setCusineCategory(newCusineCategory);
+			}
 			cusineDetails.setCusineName(cusine.getCusineName());
 			cusineDetails.setCusineDescription(cusine.getCusineDescription());
-			cusineDetails.setCusineCategory(cusineCategory);
+
 			cusineDetails.setMenuDetails(menuDetails);
 			cusineDetails.setIsActive(FOMConstants.IS_ACTIVE);
 
@@ -137,6 +163,8 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 
 	@Override
 	public ResponseBean updateRestaurant(PartnerRestaurantRequestBean partnerRestaurantRequestBean) {
+
+		logger.debug(CLASS_NAME, "Service", "inside updateRestaurant");
 
 		ResponseBean responseBean = new ResponseBean();
 
@@ -169,6 +197,9 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 
 			menuDetails.setCusineDetails(updateCusineDetails);
 		} catch (Exception e) {
+
+			logger.error(CLASS_NAME, "Service", "error occured in updateRestaurant");
+
 			throw new FoodOrderManagementServiceException("500", "Techical Error Occured while updateRestaurant");
 		}
 
@@ -179,6 +210,7 @@ public class RestaurantManagementServiceImpl implements RestaurantManagementServ
 
 		responseBean.setPayload(jsonObject);
 
+		logger.debug(CLASS_NAME, "Service", "end updateRestaurant");
 		return responseBean;
 	}
 
