@@ -32,6 +32,8 @@ public class OrderDetails {
 
 	private BigDecimal price;
 
+	private BigDecimal discount;
+	
 	private Timestamp orderCreateddateTime;
 
 	private Timestamp lstUpdatedDateTime;
@@ -114,6 +116,14 @@ public class OrderDetails {
 
 	public void setMasterOrderDetails(MasterOrderDetails masterOrderDetails) {
 		this.masterOrderDetails = masterOrderDetails;
+	}
+
+	public BigDecimal getDiscount() {
+		return discount;
+	}
+
+	public void setDiscount(BigDecimal discount) {
+		this.discount = discount;
 	}
 	
 	

@@ -22,8 +22,12 @@ public class MasterOrderDetails {
 
 	@OneToMany(mappedBy = "masterOrderDetails",cascade = CascadeType.ALL)
 	private List<OrderDetails> orderDetails;
+	
+	private Long customerId;
 
 	private String orderStatus;
+	
+	private String transactionId;
 
 	private Integer isactive;
 
@@ -73,4 +77,30 @@ public class MasterOrderDetails {
 		this.createdTime = createdTime;
 	}
 
+	public List<OrderDetails> getOrderDetails() {
+		return orderDetails;
+	}
+
+	public void setOrderDetails(List<OrderDetails> orderDetails) {
+		this.orderDetails = orderDetails;
+	}
+
+	public String getTransactionId() {
+		return transactionId;
+	}
+
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
+	}
+
+	public Long getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(Long customerId) {
+		this.customerId = customerId;
+	}
+
+	
+	
 }

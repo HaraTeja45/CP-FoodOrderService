@@ -1,5 +1,7 @@
 package com.cp.foodordermanagement.bean;
 
+import java.math.BigDecimal;
+
 import com.cp.foodordermanagement.customannotation.NotNull;
 
 public class OrderBean {
@@ -15,7 +17,15 @@ public class OrderBean {
 
 	private String paymentStatus;
 
-	private String price;
+	private BigDecimal price;
+
+	public BigDecimal getPrice() {
+		return price;
+	}
+
+	public void setPrice(BigDecimal price) {
+		this.price = price;
+	}
 
 	public String getRestaurantName() {
 		return restaurantName;
@@ -39,14 +49,6 @@ public class OrderBean {
 
 	public void setPaymentStatus(String paymentStatus) {
 		this.paymentStatus = paymentStatus;
-	}
-
-	public String getPrice() {
-		return price;
-	}
-
-	public void setPrice(String price) {
-		this.price = price;
 	}
 
 	public String getRestaurantBranchName() {

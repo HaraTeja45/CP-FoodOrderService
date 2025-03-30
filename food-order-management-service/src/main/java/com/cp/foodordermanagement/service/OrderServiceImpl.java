@@ -9,13 +9,20 @@ import java.util.Objects;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.cp.foodordermanagement.bean.OrderBean;
 import com.cp.foodordermanagement.bean.OrderRequestBean;
+import com.cp.foodordermanagement.bean.PaymentRequestBean;
+import com.cp.foodordermanagement.bean.PaymentResponse;
 import com.cp.foodordermanagement.bean.ResponseBean;
 import com.cp.foodordermanagement.customexception.FoodOrderManagementServiceException;
 import com.cp.foodordermanagement.helper.FOMConstants;
+import com.cp.foodordermanagement.helper.FOMHelper;
 import com.cp.foodordermanagement.model.CusineDetails;
 import com.cp.foodordermanagement.model.MasterOrderDetails;
 import com.cp.foodordermanagement.model.MenuDetails;
@@ -49,7 +56,13 @@ public class OrderServiceImpl implements OrderService {
 	private CusineDetailsRepository cusineDetailsRepository;
 
 	@Autowired
+	private FOMHelper fomHelper;
+
+	@Autowired
 	private CommonLoggingUtil logger;
+
+	@Value("${api.paymentservice.proceedpayment}")
+	private String proceedPaymentUrl;
 
 	@Override
 	public ResponseBean fetchOrderDetails(String customerId) {
@@ -74,7 +87,7 @@ public class OrderServiceImpl implements OrderService {
 				CusineDetails cusineDetails = cusineDetailsRepository
 						.findByCusineKeyAndIsActive(orderDets.getCusineKey(), FOMConstants.IS_ACTIVE);
 				orderBean.setPaymentStatus(orderDets.getStatus());
-				orderBean.setPrice(orderDets.getPrice() != null ? orderDets.getPrice().toString() : null);
+				orderBean.setPrice(orderDets.getPrice());
 
 				if (cusineDetails != null) {
 					orderBean.setCusineName(cusineDetails.getCusineName());
@@ -118,6 +131,7 @@ public class OrderServiceImpl implements OrderService {
 				masterOrderDetails.setLstUpdatedTime(new Timestamp(new Date().getTime()));
 				masterOrderDetails.setCreatedTime(new Timestamp(new Date().getTime()));
 				masterOrderDetails.setOrderStatus(FOMConstants.ACTIVE_STATUS);
+				masterOrderDetails.setCustomerId(orderRequestBean.getCustomerId());
 
 				for (OrderBean order : orderRequestBean.getOrderBeans()) {
 
@@ -155,6 +169,19 @@ public class OrderServiceImpl implements OrderService {
 				}
 
 				if (!orderDetailList.isEmpty()) {
+					masterOrderDetails.setOrderDetails(orderDetailList);
+
+					PaymentRequestBean paymentRequest = preparePaymentRequest(orderRequestBean);
+
+					PaymentResponse paymentResponse = proceedForPayment(paymentRequest);
+
+					if (paymentResponse != null) {
+
+						masterOrderDetails.setTransactionId(paymentResponse.getTransactionId().toString());
+						masterOrderDetails.setOrderStatus(paymentResponse.getStatus());
+
+					}
+
 					masterOrderDetailsRepository.save(masterOrderDetails);
 				}
 
@@ -185,6 +212,49 @@ public class OrderServiceImpl implements OrderService {
 		return responseBean;
 	}
 
+	private PaymentResponse proceedForPayment(PaymentRequestBean paymentRequest) {
+
+		PaymentResponse paymentResponse = null;
+
+		JSONObject requestJSON = new JSONObject(paymentRequest);
+
+		ResponseEntity<?> responseEntity = fomHelper.executeRestCall(proceedPaymentUrl, HttpMethod.POST,
+				ResponseBean.class, null, requestJSON.toString(), null);
+
+		if (responseEntity != null && responseEntity.getBody() != null
+				&& responseEntity.getStatusCode().equals(HttpStatus.OK)) {
+
+			ResponseBean responseBean = (ResponseBean) responseEntity.getBody();
+
+			if (responseBean.getPayload() != null) {
+				paymentResponse = (PaymentResponse) responseBean.getPayload();
+			}
+
+		}
+
+		return paymentResponse;
+	}
+
+	private PaymentRequestBean preparePaymentRequest(OrderRequestBean orderRequestBean) {
+
+		PaymentRequestBean paymentRequestBean = null;
+
+		BigDecimal totalPrice = orderRequestBean.getOrderBeans().stream().map(OrderBean::getPrice)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		if (totalPrice != null) {
+			paymentRequestBean = new PaymentRequestBean();
+			paymentRequestBean.setCustomerId(orderRequestBean.getCustomerId());
+			paymentRequestBean.setPaymentAmount(totalPrice);
+			paymentRequestBean.setPaymentMethod(orderRequestBean.getPaymentMode());
+			paymentRequestBean.setRewardPoints(orderRequestBean.getRewardsPoints());
+
+		}
+
+		return paymentRequestBean;
+
+	}
+
 	private OrderDetails prepareOrderDetails(MasterOrderDetails masterOrderDetails, OrderBean order,
 			RestaurantDetails restaurantDetails, CusineDetails cusineDetails) {
 
@@ -192,7 +262,7 @@ public class OrderServiceImpl implements OrderService {
 		OrderDetails orderDetails = new OrderDetails();
 
 		orderDetails.setCusineKey(cusineDetails.getCusineKey());
-		orderDetails.setPrice(new BigDecimal(order.getPrice()));
+		orderDetails.setPrice(order.getPrice());
 		orderDetails.setRestaurantKey(restaurantDetails.getRestaurantKey());
 		orderDetails.setMasterOrderDetails(masterOrderDetails);
 		orderDetails.setStatus(FOMConstants.ACTIVE_STATUS);

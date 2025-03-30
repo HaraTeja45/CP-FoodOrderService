@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public enum MapperFactory {
-	INSTANCE; 
+	INSTANCE;
 
 	private final ObjectMapper objectMapper;
-
 
 	MapperFactory() {
 		objectMapper = new ObjectMapper();
@@ -15,7 +14,6 @@ public enum MapperFactory {
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
-	
 	public ObjectMapper getInstance() {
 		return objectMapper;
 	}

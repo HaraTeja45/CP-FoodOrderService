@@ -20,6 +20,8 @@ public class CustomerDetails {
 
 	private String dob;
 
+	private Long subscriptionKey;
+
 	private Integer isactive;
 
 	@CreationTimestamp
@@ -82,6 +84,14 @@ public class CustomerDetails {
 
 	public void setLstUpdatedime(Timestamp lstUpdatedime) {
 		this.lstUpdatedime = lstUpdatedime;
+	}
+
+	public Long getSubscriptionKey() {
+		return subscriptionKey;
+	}
+
+	public void setSubscriptionKey(Long subscriptionKey) {
+		this.subscriptionKey = subscriptionKey;
 	}
 
 }
