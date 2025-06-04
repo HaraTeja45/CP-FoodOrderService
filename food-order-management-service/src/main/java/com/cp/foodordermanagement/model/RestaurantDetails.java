@@ -1,6 +1,8 @@
 package com.cp.foodordermanagement.model;
 
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -16,7 +18,7 @@ import jakarta.persistence.Table;
 public class RestaurantDetails {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long restaurantKey;
 
 	private String restaurantName;
@@ -33,7 +35,17 @@ public class RestaurantDetails {
 
 	private String restaurantRating;
 
+	public String getRestaurantLocation() {
+		return restaurantLocation;
+	}
+
+	public void setRestaurantLocation(String restaurantLocation) {
+		this.restaurantLocation = restaurantLocation;
+	}
+
 	private String branchName;
+
+	private String restaurantLocation;
 
 	private Integer isActive;
 
@@ -109,4 +121,22 @@ public class RestaurantDetails {
 		this.branchName = branchName;
 	}
 
+	public Map<String, Object> toMap() {
+
+		Map<String, Object> documentMap = new HashMap<>();
+
+
+		documentMap.put("restaurantid", restaurantKey);
+
+		documentMap.put("restaurantname", restaurantName);
+
+		documentMap.put("location", restaurantLocation);
+
+		documentMap.put("cuisine", menuDetails.getCusineDetails());
+
+		documentMap.put("rating", restaurantRating);
+
+		return documentMap;
+
+	}
 }

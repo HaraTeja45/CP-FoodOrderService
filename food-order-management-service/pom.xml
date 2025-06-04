@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.2</version>
+		<version>3.4.5</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cp</groupId>
@@ -31,10 +31,7 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jdbc</artifactId>
-		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -49,6 +46,20 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.1.0</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.opensearch.client/opensearch-rest-high-level-client -->
+<dependency>
+    <groupId>org.opensearch.client</groupId>
+    <artifactId>opensearch-rest-high-level-client</artifactId>
+    <version>2.19.2</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-spring-boot3 -->
+<dependency>
+    <groupId>io.github.resilience4j</groupId>
+    <artifactId>resilience4j-spring-boot3</artifactId>
+    <version>2.3.0</version>
+</dependency>
+
 
 		<!--
 		https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api -->
@@ -79,11 +90,9 @@
 		<!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
 
 		<dependency>
-
 			<groupId>com.logging</groupId>
-			<artifactId>Common-Logging </artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-
+	<artifactId>common-logging</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -96,6 +105,21 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+	
+	
+	<!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3 -->
+<dependency>
+    <groupId>software.amazon.awssdk</groupId>
+    <artifactId>s3</artifactId>
+    <version>2.31.50</version>
+    <scope>compile</scope>
+</dependency>
+	
+	
 	</dependencies>
 
 	<build>
