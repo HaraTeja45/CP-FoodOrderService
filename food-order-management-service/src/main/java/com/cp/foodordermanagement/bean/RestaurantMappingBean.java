@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.opensearch.common.geo.GeoPoint;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,9 +24,11 @@ public class RestaurantMappingBean {
 	private Float rating;
 
 	@JsonProperty("opentime")
+	@JsonFormat(pattern = "HH:mm")
 	private LocalTime openTime;
 
 	@JsonProperty("closetime")
+	@JsonFormat(pattern = "HH:mm")
 	private LocalTime closeTime;
 
 	@JsonProperty("isactive")
